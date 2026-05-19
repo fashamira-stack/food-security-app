@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculus in Food Security: Tilapia Growth Rates</title>
+    <!-- Tailwind CSS for Modern Styling -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Chart.js for Interactive Animated Plotting -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col items-center p-4 md:p-8">
+
+    <main class="max-w-5xl w-full bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-100">
+        <!-- Header -->
+        <header class="bg-gradient-to-r content-center from-teal-700 to-emerald-600 p-6 md:p-8 text-white">
+            <span class="text-xs font-bold uppercase tracking-widest bg-teal-800/50 px-3 py-1 rounded-full">SFM: Food Security Analytics</span>
+            <h1 class="text-2xl md:text-4xl font-extrabold mt-2">Applying Derivatives to Aquaculture Optimization</h1>
+            <p class="text-teal-100 mt-2 text-sm md:text-base">Modeling the growth velocity of Genetically Improved Farmed Tilapia (GIFT) in Malaysia.</p>
+        </header>
+
+        <div class="p-6 md:p-8 space-y-8">
+            <!-- Bioscience Scenario & Formulas -->
+            <section class="grid md:grid-cols-2 gap-6 bg-slate-50 p-5 rounded-xl border border-slate-200">
+                <div>
+                    <h2 class="text-lg font-bold text-teal-800 mb-2">The Bioscience Scenario</h2>
+                    <p class="text-sm leading-relaxed text-slate-600">
+                        In Malaysian aquaculture, harvesting fish at the exact onset of the plateau phase maximize yield while minimizing feed waste. Using structural data trends compiled by the <strong>FAO Aquaculture Profile</strong> and <strong>WorldFish Malaysia (Penang)</strong>, we can model the average mass $f(x)$ of a GIFT Tilapia over a 24-week cycle using a Gompertz sigmoid function. 
+                    </p>
+                    <p class="text-sm leading-relaxed text-slate-600 mt-2">
+                        By calculating the first derivative $f'(x)$, food security analysts pinpoint the exact week where growth acceleration drops, indicating the point of diminishing returns for feed input.
+                    </p>
+                </div>
+                
+                <div class="flex flex-col justify-center space-y-4 bg-white p-4 rounded-lg shadow-xs border border-slate-100">
+                    <div>
+                        <span class="text-xs font-semibold text-slate-400 block uppercase">Growth Function</span>
+                        <div class="text-sm font-mono font-bold text-slate-800 p-1.5 bg-slate-50 rounded-sm">
+                            $f(x) = 600 \cdot e^{-e^{-0.25(x - 10)}}$
+                        </div>
+                        <span class="text-xs text-slate-500 mt-1 block">Yields expected weight $W$ in grams at week $x$.</span>
+                    </div>
+                    <div>
+                        <span class="text-xs font-semibold text-slate-400 block uppercase">First Derivative (Rate of Change)</span>
+                        <div class="text-sm font-mono font-bold text-emerald-700 p-1.5 bg-emerald-50 rounded-sm">
+                            $f'(x) = 150 \cdot e^{-0.25(x - 10) - e^{-0.25(x - 10)}}$
+                        </div>
+                        <span class="text-xs text-slate-500 mt-1 block">Yields instantaneous growth velocity in <strong>grams per week</strong>.</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Chart Display -->
+            <section class="space-y-2">
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Growth Curve &amp; Velocity Map</h2>
+                        <p class="text-xs text-slate-500">Click anywhere inside the chart grid to evaluate the derivative at that exact point.</p>
+                    </div>
+                    <div class="hidden sm:flex space-x-4 text-xs font-medium">
+                        <span class="flex items-center gap-1.5 text-teal-600"><span class="w-3 h-3 bg-teal-600 rounded-full inline-block"></span> Weight (g)</span>
+                        <span class="flex items-center gap-1.5 text-emerald-500"><span class="w-3 h-3 bg-emerald-50 rounded-full inline-block"></span> Growth Rate (g/wk)</span>
+                    </div>
+                </div>
+                <div class="relative bg-white p-2 md:p-4 rounded-xl border border-slate-200 h-80 md:h-96">
+                    <canvas id="growthChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Dynamic Calculator/Explainer Output -->
+            <section id="resultPanel" class="transition-all duration-300 bg-gradient-to-br from-slate-800 to-slate-900 text-white p-5 rounded-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-md">
+                <div class="space-y-1">
+                    <div class="text-xs uppercase tracking-wider font-semibold text-teal-400">Calculus Snapshot</div>
+                    <h3 id="panelTitle" class="text-xl font-bold">Interactive Analysis Ready</h3>
+                    <p id="panelExplanation" class="text-sm text-slate-300 max-w-2xl">
+                        Click on any week along the timeline grid above. The application will compute the instantaneous derivative $f'(x)$ to reveal how efficiently the bio-mass is converting at that specific point.
+                    </p>
+                </div>
+                <div class="flex gap-4 bg-slate-700/40 p-3 rounded-lg border border-slate-600/30 shrink-0 w-full md:w-auto justify-around">
+                    <div class="text-center px-2">
+                        <span class="text-[10px] uppercase text-slate-400 block">Mass $f(x)$</span>
+                        <span id="statWeight" class="text-lg font-extrabold text-teal-300">--</span>
+                    </div>
+                    <div class="w-[1px] bg-slate-600 self-stretch"></div>
+                    <div class="text-center px-2">
+                        <span class="text-[10px] uppercase text-slate-400 block">Velocity $f'(x)$</span>
+                        <span id="statRate" class="text-lg font-extrabold text-emerald-400">--</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Reference Footer -->
+        <footer class="bg-slate-100 border-t border-slate-200 px-6 py-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between gap-2">
+            <div>Data Foundations: <em>FAO National Aquaculture Sector Overview (Malaysia)</em> &amp; <em>WorldFish Strain Repositories</em>.</div>
+            <div class="font-medium text-slate-600">Calculus for Bio-Systems App v1.2</div>
+        </footer>
+    </main>
+
+    <script>
+        // Data generation according to the bio-equations
+        const labels = [];
+        const weightData = [];
+        const rateData = [];
+
+        // Generate high-resolution array steps for weeks 0 through 24
+        for (let x = 0; x <= 24; x += 0.5) {
+            labels.push(x);
+            
+            // Gompertz Function f(x)
+            const fx = 600 * Math.exp(-Math.exp(-0.25 * (x - 10)));
+            weightData.push(fx);
+            
+            // Analytical Derivative f'(x)
+            const dfx = 150 * Math.exp(-0.25 * (x - 10) - Math.exp(-0.25 * (x - 10)));
+            rateData.push(dfx);
+        }
+
+        // Initialize Chart.js
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        const growthChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Fish Weight (grams)',
+                        data: weightData,
+                        borderColor: '#0d9488', // teal-600
+                        backgroundColor: 'rgba(13, 148, 136, 0.05)',
+                        borderWidth: 3,
+                        yAxisID: 'yWeights',
+                        tension: 0.2,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        fill: true
+                    },
+                    {
+                        label: 'Growth Velocity (g/week)',
+                        data: rateData,
+                        borderColor: '#10b981', // emerald-500
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        yAxisID: 'yRates',
+                        tension: 0.2,
+                        pointRadius: 0,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                animation: {
+                    duration: 1800,
+                    easing: 'easeOutQuart'
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Timeline (Weeks in Pond)',
+                            font: { weight: 'bold', size: 12 }
+                        },
+                        grid: { color: '#f1f5f9' }
+                    },
+                    yWeights: {
+                        type: 'linear',
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Total Biomass (g)',
+                            font: { weight: 'bold' }
+                        },
+                        min: 0,
+                        max: 650,
+                        grid: { color: '#f1f5f9' }
+                    },
+                    yRates: {
+                        type: 'linear',
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Growth Velocity (g/week)',
+                            font: { weight: 'bold' }
+                        },
+                        min: 0,
+                        max: 60,
+                        grid: { drawOnChartArea: false } // Avoid grid clutter
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                },
+                // Handle the click event to perform calculus evaluations
+                onClick: (e) => {
+                    const activePoints = growthChart.getElementsAtEventForMode(e, 'index', { intersect: false }, Array);
+                    if (activePoints.length > 0) {
+                        const index = activePoints[0].index;
+                        const week = growthChart.data.labels[index];
+                        const weight = growthChart.data.datasets[0].data[index];
+                        const rate = growthChart.data.datasets[1].data[index];
+                        
+                        updateExplainerPanel(week, weight, rate);
+                    }
+                }
+            }
+        });
+
+        // Explainer Logic to translate the derivatives into real-world insights
+        function updateExplainerPanel(week, weight, rate) {
+            const panel = document.getElementById('resultPanel');
+            const title = document.getElementById('panelTitle');
+            const explanation = document.getElementById('panelExplanation');
+            const statWeight = document.getElementById('statWeight');
+            const statRate = document.getElementById('statRate');
+
+            // Apply visual flash cue upon clicking
+            panel.classList.remove('from-slate-800', 'to-slate-900');
+            panel.classList.add('from-teal-950', 'to-slate-900');
+            setTimeout(() => {
+                panel.classList.remove('from-teal-950', 'to-slate-900');
+                panel.classList.add('from-slate-800', 'to-slate-900');
+            }, 150);
+
+            // Update numerical readings
+            statWeight.innerText = `${weight.toFixed(1)}g`;
+            statRate.innerText = `${rate.toFixed(1)}g/wk`;
+            title.innerText = `Evaluation at Week ${week}`;
+
+            // Context-driven biological explanation based on the value of the derivative
+            let contextText = "";
+            if (week < 6) {
+                contextText = `The derivative $f'(${week}) = ${rate.toFixed(1)}$ is relatively low but climbing. The fingerlings are adjusting to pond biology, focusing on structural skeletal frame establishment rather than pure meat mass.`;
+            } else if (week >= 6 && week < 10) {
+                contextText = `The derivative is surging rapidly! At $f'(${week}) = ${rate.toFixed(1)}$ grams per week, the fish are in their prime metabolic window. Biomass accumulation is accelerating, making feed conversion highly cost-effective right now.`;
+            } else if (week >= 10 && week <= 11) {
+                contextText = `This is the inflection point ($x = 10$). The derivative reaches its global maximum value of $\\approx 55.2$ g/week. Growth speed is peaking. From next week onward, the biological rate of change begins to downshift.`;
+            } else if (week > 11 && week < 18) {
+                contextText = `The derivative has dropped down to $${rate.toFixed(1)}$ g/week. Even though total weight is still increasing, the velocity is decelerating. The fish require more food energy just to maintain body functions rather than adding new mass.`;
+            } else {
+                contextText = `The derivative approaches zero ($f'(${week}) = ${rate.toFixed(1)}$ g/week). Growth has effectively plateaued. Keeping the batch in the pond past this point squanders resources and directly undermines aquaculture food security efficiency. Time to harvest!`;
+            }
+
+            explanation.innerHTML = contextText;
+        }
+    </script>
+</body>
+</html>
